@@ -28,6 +28,7 @@ function main() {
     insertNewKeywords();
 
     conn.close();
+    //end of file, kk thanx bb
 }
 
 /**
