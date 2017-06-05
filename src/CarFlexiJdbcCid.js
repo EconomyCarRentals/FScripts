@@ -28,6 +28,7 @@ function main() {
     insertNewKeywords();
 
     conn.close();
+    //kekekekeke
 }
 
 /**
