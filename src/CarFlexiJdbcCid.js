@@ -18,13 +18,12 @@
  * <p>
  */
 function main() {
-    user = "CarFlexiJDBC";
-    userPwd = "manolis11";
-    dbUrl = "jdbc:mysql://173.194.225.43:3306/";
+    user = "script-service";
+    userPwd = "5greenhorses";
+    dbUrl = "jdbc:mysql://23.251.133.254:3306/";
     conn = Jdbc.getConnection(dbUrl, user, userPwd);
     conn.setAutoCommit(false);
 
-    campaignBabysitting();
     insertNewKeywords();
 
     conn.close();
@@ -58,7 +57,7 @@ function campaignBabysitting() {
 function checkAccount(cid) {
     var returnValue = false;
     var currentAccount = AdWordsApp.currentAccount();
-    var stmt = conn.prepareStatement('CALL CarFlexi.check_account(?)');
+    var stmt = conn.prepareStatement('CALL `black-hole`.check_account(?)');
     stmt.setString(1, cid);
     var results = stmt.executeQuery();
     if (results.next()) {
@@ -213,7 +212,7 @@ function updateCampaignInDb(cid, instructions) {
  * @return Returns nothing.
  */
 function insertNewKeywords() {
-    var cid = AdWordsApp.currentAccount().getCustomerId();
+    var cid = AdWordsApp.currentAccount().getCustomerId().replace(/\-/g, "");
     var instructions = [[]];
     if (checkAccount(cid)) {
         instructions = getNewKeywords(cid);
@@ -241,7 +240,7 @@ function getNewKeywords(cid) {
     var positive = [];
     var campNegative = [];
     var adgrNegative = [];
-    var stmt = conn.prepareStatement('CALL CarFlexi.get_new_kw_of_acc(?)');
+    var stmt = conn.prepareStatement('CALL `black-hole`.get_new_kw_of_acc(?)');
     stmt.setString(1, cid);
     var results = stmt.executeQuery();
     while (results.next()) {
@@ -275,7 +274,7 @@ function getNewKeywords(cid) {
  * @returns {String} Executed operations count.
  */
 function removeNewKeywordsFromDb(cid) {
-    var stmt = conn.prepareStatement('CALL CarFlexi.remove_new_kw_of_acc(?)');
+    var stmt = conn.prepareStatement('CALL `black-hole`.remove_new_kw_of_acc(?)');
     stmt.setString(1, cid);
     stmt.addBatch();
     var batch = stmt.executeBatch();
