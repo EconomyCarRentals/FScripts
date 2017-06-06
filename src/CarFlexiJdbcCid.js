@@ -1,4 +1,9 @@
 /**
+ * @Version 2.0
+ * @Date 06/06/2017
+ * @Author Argiris
+ * @Changelog migrated to singularity database
+ * 
  * @Version 1.0
  * @Date 15/09/16
  * @Author Argiris
