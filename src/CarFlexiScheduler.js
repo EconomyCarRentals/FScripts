@@ -1,4 +1,8 @@
 /**
+ * @Version 4.5
+ * @Date 17/07/2017
+ * @Changelog fixed ttKeyword with 0 extraBonus
+ * 
  * @Version 4.4
  * @Date 01/06/2017
  * @Changelog cpKeyword negative bonus fix
@@ -4707,6 +4711,8 @@ function ttKeyword() {
             } else {
                 carry = base - extraBonus;
             }
+        } else {
+            carry = base;
         }
         if (matchType == "Broad") {
             if (carry <= 0) {
