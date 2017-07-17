@@ -180,7 +180,7 @@
 
 function main() {
     BD = {};
-    BD.VERSION = "4.4";
+    BD.VERSION = "4.5";
     BD.ACC = {};
     BD.CAMP = {};
     BD.ADGR = {};
