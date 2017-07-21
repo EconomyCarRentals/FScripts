@@ -1,4 +1,9 @@
 /**
+ * @Version 2.2
+ * @Date 21/07/2017
+ * @Author Argiris
+ * @Changelog dual source of keywords - preparation to next version
+ * 
  * @Version 2.1
  * @Date 12/07/2017
  * @Author Argiris
@@ -38,179 +43,108 @@ function main() {
 }
 
 /**
- * Loads search terms into the database to become new keywords.
- * 
- * @returns {String} Executed operations count.
- */
-function loadQueries() {
-    var returnValue = "";
-    var sheet = SpreadsheetApp
-            .openByUrl(
-                    "https://docs.google.com/spreadsheets/d/1iQmYjgtasdl8Ipf2ma22Ma2xrRkWLrudIKzrWRbhwUM/edit#gid=0")
-            .getSheetByName("Import");
-    var queries = sheet.getRange("A:I").getValues();
-    var stmt = conn
-            .prepareStatement('CALL `black-hole`.insert_new_keyword(?, ?, ?, ?, ?, ?, ?, ?, ?)');
-    if (queries.length > 1) {
-        for (var i in queries) {
-            if (i == 0) {
-                continue;
-            }
-            stmt.setString(1, queries[i][0].replace(/\-/g, ""));
-            stmt.setString(2, queries[i][1].replace(/\[.*?\]/, "").replace("'", "\\'"));
-            stmt.setString(3, queries[i][2].replace(/\[.*?\]/, "").replace("'", "\\'"));
-            stmt.setString(4, queries[i][3].replace(/@/, ""));
-            stmt.setString(5, queries[i][4].replace(/@/, ""));
-            stmt.setString(6, queries[i][5]);
-            stmt.setString(7, queries[i][6]);
-            stmt.setDouble(8, parseFloat(queries[i][7]));
-            stmt.setString(9, queries[i][8]);
-            stmt.addBatch();
-        }
-        var batch = stmt.executeBatch();
-        conn.commit();
-        returnValue = "Keyword Insertion Completed, Batch Size: "
-                + batch.length;
-        sheet.deleteRows(2, sheet.getLastRow() - 1);
-        sheet.getRange("A1:I1").setValues(
-                [["Account Id", "Campaign Name", "AdGroup Name", "Keyword",
-                        "Search Term", "Type", "Matchtype", "Cpc", "Flag"]]);
-    } else {
-        returnValue = "No keyword insertion operations";
-    }
-    return returnValue;
-}
-
-/**
  * Loads search terms into the database to become new positive keywords.
  * 
- * @returns {String} Executed operations count.
+ * @return Returns nothing.
  */
 function loadPositiveQueries() {
-    var returnValue = "";
     var sheet = SpreadsheetApp
-            .openByUrl(
-                    "https://docs.google.com/spreadsheets/d/1iQmYjgtasdl8Ipf2ma22Ma2xrRkWLrudIKzrWRbhwUM/edit#gid=0")
+            .openByUrl("https://docs.google.com/spreadsheets/d/1iQmYjgtasdl8Ipf2ma22Ma2xrRkWLrudIKzrWRbhwUM/edit#gid=0")
             .getSheetByName("Positive");
     var queries = sheet.getRange("A:I").getValues();
-    var stmt = conn
-            .prepareStatement('CALL `black-hole`.insert_new_keyword(?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    var stmt = conn.prepareStatement('CALL `black-hole`.insert_new_positive_kw(?, ?, ?, ?, ?, ?, ?)');
     if (queries.length > 1) {
         for (var i in queries) {
             if (i == 0) {
                 continue;
             }
-            stmt.setString(1, queries[i][0].replace(/\-/g, ""));
-            stmt.setString(2, "ignored");
-            stmt.setString(3, queries[i][2].replace(/\[.*?\]/, "").replace("'", "\\'"));
-            stmt.setString(4, queries[i][3].replace(/@/, ""));
-            stmt.setString(5, queries[i][4].replace(/@/, ""));
-            stmt.setString(6, "P");
-            stmt.setString(7, queries[i][6]);
-            stmt.setDouble(8, parseFloat(queries[i][7]));
-            stmt.setString(9, queries[i][8]);
+            stmt.setString(1, queries[i][0].replace(/\-/g, "")); //Account Id
+            stmt.setString(2, queries[i][2].replace(/\[.*?\]/, "").replace("'", "\\'")); //AdGroup Name
+            stmt.setString(3, queries[i][4].replace(/@/, "")); //Search Term
+            stmt.setString(4, queries[i][6]); //Matchtype
+            stmt.setString(5, queries[i][3].replace(/@/, "")); //Keyword
+            stmt.setDouble(6, parseFloat(queries[i][7]));// cpc
+            stmt.setString(7, queries[i][8]); //Keep Flag
             stmt.addBatch();
         }
         var batch = stmt.executeBatch();
         conn.commit();
-        returnValue = "Positive Keyword Insertion Completed, Batch Size: "
-                + batch.length;
+        Logger.log("Positive Keyword Insertion Completed, Batch Size: " + batch.length);
         sheet.deleteRows(2, sheet.getLastRow() - 1);
         sheet.getRange("A1:I1").setValues(
                 [["Account Id", "Campaign Name", "AdGroup Name", "Keyword",
                         "Search Term", "Type", "Matchtype", "Cpc", "Flag"]]);
     } else {
-        returnValue = "No Positive keyword insertion operations";
+        Logger.log("No Positive keyword insertion operations");
     }
-    return returnValue;
 }
 
 /**
  * Loads search terms into the database to become new AdGroup negative keywords.
  * 
- * @returns {String} Executed operations count.
+ * @return Returns nothing.
  */
 function loadAdGroupNegativeQueries() {
-    var returnValue = "";
     var sheet = SpreadsheetApp
-            .openByUrl(
-                    "https://docs.google.com/spreadsheets/d/1iQmYjgtasdl8Ipf2ma22Ma2xrRkWLrudIKzrWRbhwUM/edit#gid=0")
+            .openByUrl("https://docs.google.com/spreadsheets/d/1iQmYjgtasdl8Ipf2ma22Ma2xrRkWLrudIKzrWRbhwUM/edit#gid=0")
             .getSheetByName("AdGroup Negative");
     var queries = sheet.getRange("A:I").getValues();
-    var stmt = conn
-            .prepareStatement('CALL `black-hole`.insert_new_keyword(?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    var stmt = conn.prepareStatement('CALL `black-hole`.insert_new_adgr_neg_kw(?, ?, ?, ?)');
     if (queries.length > 1) {
         for (var i in queries) {
             if (i == 0) {
                 continue;
             }
-            stmt.setString(1, queries[i][0].replace(/\-/g, ""));
-            stmt.setString(2, "ignored");
-            stmt.setString(3, queries[i][2].replace(/\[.*?\]/, "").replace("'", "\\'"));
-            stmt.setString(4, "ignored");
-            stmt.setString(5, queries[i][4].replace(/@/, ""));
-            stmt.setString(6, "AN");
-            stmt.setString(7, queries[i][6]);
-            stmt.setDouble(8, 0.01);
-            stmt.setString(9, "ign");
+            stmt.setString(1, queries[i][0].replace(/\-/g, "")); //Account Id
+            stmt.setString(2, queries[i][2].replace(/\[.*?\]/, "").replace("'", "\\'")); //AdGroup Name
+            stmt.setString(3, queries[i][4].replace(/@/, "")); //Search Term
+            stmt.setString(4, queries[i][6]); //Matchtype
             stmt.addBatch();
         }
         var batch = stmt.executeBatch();
         conn.commit();
-        returnValue = "AdGroup Negative Keyword Insertion Completed, Batch Size: "
-                + batch.length;
+        Logger.log("AdGroup Negative Keyword Insertion Completed, Batch Size: " + batch.length);
         sheet.deleteRows(2, sheet.getLastRow() - 1);
         sheet.getRange("A1:I1").setValues(
                 [["Account Id", "Campaign Name", "AdGroup Name", "Keyword",
                         "Search Term", "Type", "Matchtype", "Cpc", "Flag"]]);
     } else {
-        returnValue = "No AdGroup Negative keyword insertion operations";
+        Logger.log("No AdGroup Negative keyword insertion operations");
     }
-    return returnValue;
 }
 
 /**
  * Loads search terms into the database to become new Campaign Negative keywords.
  * 
- * @returns {String} Executed operations count.
+ * @return Returns nothing.
  */
 function loadCampaignNegativeQueries() {
-    var returnValue = "";
     var sheet = SpreadsheetApp
-            .openByUrl(
-                    "https://docs.google.com/spreadsheets/d/1iQmYjgtasdl8Ipf2ma22Ma2xrRkWLrudIKzrWRbhwUM/edit#gid=0")
+            .openByUrl("https://docs.google.com/spreadsheets/d/1iQmYjgtasdl8Ipf2ma22Ma2xrRkWLrudIKzrWRbhwUM/edit#gid=0")
             .getSheetByName("Campaign Negative");
     var queries = sheet.getRange("A:I").getValues();
-    var stmt = conn
-            .prepareStatement('CALL `black-hole`.insert_new_keyword(?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    var stmt = conn.prepareStatement('CALL `black-hole`.insert_new_camp_neg_kw(?, ?, ?, ?)');
     if (queries.length > 1) {
         for (var i in queries) {
             if (i == 0) {
                 continue;
             }
-            stmt.setString(1, queries[i][0].replace(/\-/g, ""));
-            stmt.setString(2, queries[i][1].replace(/\[.*?\]/, "").replace("'", "\\'"));
-            stmt.setString(3, "ignored");
-            stmt.setString(4, "ignored");
-            stmt.setString(5, queries[i][4].replace(/@/, ""));
-            stmt.setString(6, "CN");
-            stmt.setString(7, queries[i][6]);
-            stmt.setDouble(8, 0.01);
-            stmt.setString(9, "ign");
+            stmt.setString(1, queries[i][0].replace(/\-/g, "")); //Account Id
+            stmt.setString(2, queries[i][1].replace(/\[.*?\]/, "").replace("'", "\\'")); //Campaign Name
+            stmt.setString(3, queries[i][4].replace(/@/, "")); //Search Term
+            stmt.setString(4, queries[i][6]); //Matchtype
             stmt.addBatch();
         }
         var batch = stmt.executeBatch();
         conn.commit();
-        returnValue = "Campaign Negative Keyword Insertion Completed, Batch Size: "
-                + batch.length;
+        Logger.log("Campaign Negative Keyword Insertion Completed, Batch Size: " + batch.length);
         sheet.deleteRows(2, sheet.getLastRow() - 1);
         sheet.getRange("A1:I1").setValues(
                 [["Account Id", "Campaign Name", "AdGroup Name", "Keyword",
                         "Search Term", "Type", "Matchtype", "Cpc", "Flag"]]);
     } else {
-        returnValue = "No Campaign Negative keyword insertion operations";
+        Logger.log("No Campaign Negative keyword insertion operations");
     }
-    return returnValue;
 }
 
 /**
