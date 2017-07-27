@@ -1,4 +1,9 @@
 /**
+ * @Version 3.0
+ * @Date 27/07/2017
+ * @Author Argiris
+ * @Changelog Sends mail on unrecognized record
+ * 
  * @Version 2.1
  * @Date 19/07/2017
  * @Author Argiris
@@ -37,7 +42,6 @@ function main() {
     CreateAdGroupNegativeKeywords();
     CreateCampaignNegativeKeywords();
     CreatePositiveKeywords();
-    OLDinsertNewKeywords();
 
     conn.close();
 }
@@ -220,82 +224,6 @@ function updateCampaignInDb(cid, instructions) {
 }
 
 /**
- * Creates new keywords in AdWords. Can be from all types and matchtypes.
- * 
- * @return Returns nothing.
- */
-function OLDinsertNewKeywords() {
-    var cid = AdWordsApp.currentAccount().getCustomerId().replace(/\-/g, "");
-    var instructions = [[]];
-    if (checkAccount(cid)) {
-        instructions = OLDgetNewKeywords(cid);
-        Logger.log(OLDcreatePositiveKeywords(instructions));
-        Logger.log(OLDcreateCampaignNegativeKeywords(instructions));
-        Logger.log(OLDcreateAdGroupNegativeKeywords(instructions));
-        if (instructions[0].length > 0 || instructions[1].length > 0
-                || instructions[2].length > 0) {
-            Logger.log(OLDremoveNewKeywordsFromDb(cid));
-        }
-    } else {
-        Logger.log("Error");
-    }
-}
-
-/**
- * Fetches keywords to insert into AdWords.
- * 
- * @param cid
- *            The id of the account.
- * @returns {Array} Positive keywords at index 0, campaign negative keywords at
- *          index 1, adgroup negative keywords at index 2.
- */
-function OLDgetNewKeywords(cid) {
-    var positive = [];
-    var campNegative = [];
-    var adgrNegative = [];
-    var stmt = conn.prepareStatement('CALL `black-hole`.get_new_kw_of_acc(?)');
-    stmt.setString(1, cid);
-    var results = stmt.executeQuery();
-    while (results.next()) {
-        var type = results.getObject('keywordtype');
-        if (type == "P") {
-            positive.push([results.getObject('adgr_name'),
-                results.getObject('keyword'),
-                results.getObject('search_term'),
-                results.getObject('matchtype'), results.getObject('cpc'),
-                results.getObject('keep_flag')]);
-        } else if (type == "CN") {
-            campNegative.push([results.getObject('camp_name'),
-                results.getObject('search_term'),
-                results.getObject('matchtype')]);
-        } else if (type == "AN") {
-            adgrNegative.push([results.getObject('adgr_name'),
-                results.getObject('search_term'),
-                results.getObject('matchtype')]);
-        } else {
-            // Send Mail On Error
-        }
-    }
-    return [positive, campNegative, adgrNegative];
-}
-
-/**
- * Removes newly created keywords from the database.
- * 
- * @param cid
- *            The id of the account.
- * @returns {String} Executed operations count.
- */
-function OLDremoveNewKeywordsFromDb(cid) {
-    var stmt = conn.prepareStatement('CALL `black-hole`.remove_new_kw_of_acc(?)');
-    stmt.setString(1, cid);
-    stmt.addBatch();
-    var batch = stmt.executeBatch();
-    conn.commit();
-    return "New keywords removed from database queue";
-}
-
-/**
  * Converts plain keyword text to imply its matchtype through its text.
  * 
  * <p>
@@ -336,6 +264,7 @@ function formatKeywordByMatchtype(keywordText, matchtype) {
 function CreateAdGroupNegativeKeywords() {
     var cid = AdWordsApp.currentAccount().getCustomerId().replace(/\-/g, "");
     var keywords = [];
+    var dump = [];
     var stmt = conn.prepareStatement('CALL `black-hole`.select_new_adgr_neg_kw_by_acc(?)');
     stmt.setString(1, cid);
     var results = stmt.executeQuery();
@@ -355,10 +284,25 @@ function CreateAdGroupNegativeKeywords() {
                 adGroupIterator.next().createNegativeKeyword(formatKeywordByMatchtype(keywords[i]["searchterm"], keywords[i]["matchtype"]));
                 count++;
             } else {
-                // Send Mail On Error
+                dump.push([cid, keywords[i]["adgr_name"], keywords[i]["searchterm"], keywords[i]["matchtype"], "Unresolved AdGroup"]);
             }
         }
         Logger.log("AdGroup Negative Keywords Inserted: " + count);
+        if (dump.length > 0 && MailApp.getRemainingDailyQuota() > 0) {
+            var dumpMessage = "<ul>";
+            for (var i in dump) {
+                dumpMessage += "<li>" + dump[i].join(", ") + "</li>";
+            }
+            dumpMessage += "</ul>";
+            MailApp.sendEmail({
+                to: "yorgos@carflexi.com",
+                cc: "akaintariscarflexi@gmail.com",
+                name: "CarFlexi SQR Script Services",
+                subject: "AdGroup Negative Keywords not Inserted in " + cid,
+                htmlBody: dumpMessage
+            });
+            Logger.log("Sent an e-mail for AdGroup Negative Keywords not Inserted.");
+        }
         var stmt = conn.prepareStatement('CALL `black-hole`.remove_new_adgr_neg_kw_by_acc(?)');
         stmt.setString(1, cid);
         stmt.addBatch();
@@ -378,6 +322,7 @@ function CreateAdGroupNegativeKeywords() {
 function CreateCampaignNegativeKeywords() {
     var cid = AdWordsApp.currentAccount().getCustomerId().replace(/\-/g, "");
     var keywords = [];
+    var dump = [];
     var stmt = conn.prepareStatement('CALL `black-hole`.select_new_camp_neg_kw_by_acc(?)');
     stmt.setString(1, cid);
     var results = stmt.executeQuery();
@@ -397,10 +342,25 @@ function CreateCampaignNegativeKeywords() {
                 campaignIterator.next().createNegativeKeyword(formatKeywordByMatchtype(keywords[i]["searchterm"], keywords[i]["matchtype"]));
                 count++;
             } else {
-                // Send Mail On Error
+                dump.push([cid, keywords[i]["camp_name"], keywords[i]["searchterm"], keywords[i]["matchtype"], "Unresolved Campaign"]);
             }
         }
         Logger.log("Campaign Negative Keywords Inserted: " + count);
+        if (dump.length > 0 && MailApp.getRemainingDailyQuota() > 0) {
+            var dumpMessage = "<ul>";
+            for (var i in dump) {
+                dumpMessage += "<li>" + dump[i].join(", ") + "</li>";
+            }
+            dumpMessage += "</ul>";
+            MailApp.sendEmail({
+                to: "yorgos@carflexi.com",
+                cc: "akaintariscarflexi@gmail.com",
+                name: "CarFlexi SQR Script Services",
+                subject: "Campaign Negative Keywords not Inserted in " + cid,
+                htmlBody: dumpMessage
+            });
+            Logger.log("Sent an e-mail for Campaign Negative Keywords not Inserted.");
+        }
         var stmt = conn.prepareStatement('CALL `black-hole`.remove_new_camp_neg_kw_by_acc(?)');
         stmt.setString(1, cid);
         stmt.addBatch();
@@ -420,6 +380,7 @@ function CreateCampaignNegativeKeywords() {
 function CreatePositiveKeywords() {
     var cid = AdWordsApp.currentAccount().getCustomerId().replace(/\-/g, "");
     var keywords = [];
+    var dump = [];
     var stmt = conn.prepareStatement('CALL `black-hole`.select_new_positive_kw_by_acc(?)');
     stmt.setString(1, cid);
     var results = stmt.executeQuery();
@@ -454,13 +415,28 @@ function CreatePositiveKeywords() {
                             .build();
                     count++;
                 } else {
-                    // Send Mail On Error
+                    dump.push([cid, keywords[i]["adgr_name"], keywords[i]["keyword"], keywords[i]["searchterm"], keywords[i]["matchtype"], keywords[i]["cpc"], keywords[i]["keep_flag"], "Unresolved AdGroup"]);
                 }
             } else {
-                // Send Mail On Error
+                dump.push([cid, keywords[i]["adgr_name"], keywords[i]["keyword"], keywords[i]["searchterm"], keywords[i]["matchtype"], keywords[i]["cpc"], keywords[i]["keep_flag"], "Unresolved Keyword/AdGroup"]);
             }
         }
         Logger.log("Positive Keywords Inserted: " + count);
+        if (dump.length > 0 && MailApp.getRemainingDailyQuota() > 0) {
+            var dumpMessage = "<ul>";
+            for (var i in dump) {
+                dumpMessage += "<li>" + dump[i].join(", ") + "</li>";
+            }
+            dumpMessage += "</ul>";
+            MailApp.sendEmail({
+                to: "yorgos@carflexi.com",
+                cc: "akaintariscarflexi@gmail.com",
+                name: "CarFlexi SQR Script Services",
+                subject: "Positive Keywords not Inserted in " + cid,
+                htmlBody: dumpMessage
+            });
+            Logger.log("Sent an e-mail for Positive Keywords not Inserted.");
+        }
         var stmt = conn.prepareStatement('CALL `black-hole`.remove_new_positive_kw_by_acc(?)');
         stmt.setString(1, cid);
         stmt.addBatch();
@@ -470,115 +446,4 @@ function CreatePositiveKeywords() {
     } else {
         Logger.log("No Positive Keywords");
     }
-}
-
-/**
- * Creates positive keywords in the specified campaigns, adgroups.
- * 
- * @param instructions
- *            Positive keywords at index 0, campaign negative keywords at index
- *            1, adgroup negative keywords at index 2.
- * @returns {String} Executed operations count.
- */
-function OLDcreatePositiveKeywords(instructions) {
-    var returnValue = "";
-    if (instructions[0].length > 0) {
-        var count = 0;
-        for (var i in instructions[0]) {
-            var keywordIterator = AdWordsApp.keywords().withCondition(
-                    "AdGroupName CONTAINS '" + instructions[0][i][0] + "'")
-                    .withCondition(
-                            "Text = '"
-                            + instructions[0][i][1].replace("[", "")
-                            .replace("]", "").replace("\"", "")
-                            .replace("\"", "") + "'").get();
-            if (keywordIterator.totalNumEntities() >= 1) {
-                var adGroupIterator = AdWordsApp.adGroups().withCondition(
-                        "AdGroupName CONTAINS '" + instructions[0][i][0] + "'")
-                        .get();
-                if (adGroupIterator.totalNumEntities() == 1) {
-                    var parentUrls = keywordIterator.next().urls();
-                    adGroupIterator.next().newKeywordBuilder().withText(
-                            formatKeywordByMatchtype(instructions[0][i][2],
-                                    instructions[0][i][3])).withCpc(
-                            instructions[0][i][4]).withCustomParameters(
-                            parentUrls.getCustomParameters()).withFinalUrl(
-                            parentUrls.getFinalUrl().replace(/{ignore}.*/,
-                            "{ignore}&keep=" + instructions[0][i][5]))
-                            .build();
-                    count++;
-                } else {
-                    // Send Mail On Error
-                }
-            } else {
-                // Send Mail On Error
-            }
-        }
-        returnValue = "Positive Keywords Inserted: " + count;
-    } else {
-        returnValue = "No Positive Keywords";
-    }
-    return returnValue;
-}
-
-/**
- * Creates negative keywords in the specified campaigns.
- * 
- * @param instructions
- *            Positive keywords at index 0, campaign negative keywords at index
- *            1, adgroup negative keywords at index 2.
- * @returns {String} Executed operations count.
- */
-function OLDcreateCampaignNegativeKeywords(instructions) {
-    var returnValue = "";
-    if (instructions[1].length > 0) {
-        var count = 0;
-        for (var i in instructions[1]) {
-            var campaignIterator = AdWordsApp.campaigns().withCondition(
-                    "Name CONTAINS '" + instructions[1][i][0] + "'").get();
-            if (campaignIterator.totalNumEntities() == 1) {
-                campaignIterator.next().createNegativeKeyword(
-                        formatKeywordByMatchtype(instructions[1][i][1],
-                                instructions[1][i][2]));
-                count++;
-            } else {
-                // Send Mail On Error
-            }
-        }
-        returnValue = "Campaign Negative Keywords Inserted: " + count;
-    } else {
-        returnValue = "No Campaign Negative Keywords";
-    }
-    return returnValue;
-}
-
-/**
- * Creates negative keywords in the specified adgroups.
- * 
- * @param instructions
- *            Positive keywords at index 0, campaign negative keywords at index
- *            1, adgroup negative keywords at index 2.
- * @returns {String} Executed operations count.
- */
-function OLDcreateAdGroupNegativeKeywords(instructions) {
-    var returnValue = "";
-    if (instructions[2].length > 0) {
-        var count = 0;
-        for (var i in instructions[2]) {
-            var adGroupIterator = AdWordsApp.adGroups().withCondition(
-                    "Name CONTAINS '" + instructions[2][i][0] + "'").get();
-            if (adGroupIterator.totalNumEntities() == 1) {
-                adGroupIterator.next().createNegativeKeyword(
-                        formatKeywordByMatchtype(instructions[2][i][1],
-                                instructions[2][i][2]));
-                count++;
-            } else {
-                // Send Mail On Error
-            }
-        }
-        returnValue = "AdGroup Negative Keywords Inserted: " + count;
-    } else {
-        returnValue = "No AdGroup Negative Keywords";
-    }
-    return returnValue;
 }

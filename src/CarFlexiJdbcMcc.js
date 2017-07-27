@@ -1,4 +1,9 @@
 /**
+ * @Version 3.0
+ * @Date 27/07/2017
+ * @Author Argiris
+ * @Changelog Sends mail on unrecognized record
+ * 
  * @Version 2.2
  * @Date 21/07/2017
  * @Author Argiris
@@ -35,9 +40,36 @@ function main() {
     conn = Jdbc.getConnection(dbUrl, user, userPwd);
     conn.setAutoCommit(false);
 
-    Logger.log(loadPositiveQueries());
-    Logger.log(loadAdGroupNegativeQueries());
-    Logger.log(loadCampaignNegativeQueries());
+    var message = "";
+
+    try {
+        loadPositiveQueries();
+    } catch (e) {
+        message += "<ul><li>" + e + "</li></ul><br>";
+        Logger.log(e);
+    }
+    try {
+        loadAdGroupNegativeQueries();
+    } catch (e) {
+        message += "<ul><li>" + e + "</li></ul><br>";
+        Logger.log(e);
+    }
+    try {
+        loadCampaignNegativeQueries();
+    } catch (e) {
+        message += "<ul><li>" + e + "</li></ul><br>";
+        Logger.log(e);
+    }
+    if (message.length > 0 && MailApp.getRemainingDailyQuota() > 0) {
+        MailApp.sendEmail({
+            to: "yorgos@carflexi.com",
+            cc: "akaintariscarflexi@gmail.com",
+            name: "CarFlexi SQR Script Services",
+            subject: "Import from Spreadsheet Issue",
+            htmlBody: message
+        });
+        Logger.log("Sent an e-mail concerning this issue.");
+    }
 
     conn.close();
 }
