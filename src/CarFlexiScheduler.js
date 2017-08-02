@@ -1,4 +1,13 @@
 /**
+ * @Version 4.6.1
+ * @Author Fotis
+ * @Date 29/07/2017
+ * @Changelog debuggeed big query
+ *
+ * @Version 4.6
+ * @Date 28/07/2017
+ * @Changelog 2 retries for BQ selector, sqr implementation
+ * 
  * @Version 4.5
  * @Date 17/07/2017
  * @Changelog fixed ttKeyword with 0 extraBonus
@@ -180,7 +189,7 @@
 
 function main() {
     BD = {};
-    BD.VERSION = "4.5";
+    BD.VERSION = "4.6.1";
     BD.ACC = {};
     BD.CAMP = {};
     BD.ADGR = {};
@@ -351,57 +360,77 @@ function scheduller() {
     } else if (time.getUTCHours() == 2) {
         if ((getDayInYear() % 2) == 1) {
             bidder('trf', '2i');
+        } else {
+            sqr();
         }
     } else if (time.getUTCHours() == 3) {
         if ((getDayInYear() % 3) == 1) {
             bidder('trf', '3i');
+        } else {
+            sqr();
         }
     } else if (time.getUTCHours() == 4) {
         if ((getDayInYear() % 4) == 1) {
             bidder('trf', '4i');
+        } else {
+            sqr();
         }
     } else if (time.getUTCHours() == 5) {
         if ((getDayInYear() % 5) == 1) {
             bidder('trf', '5i');
+        } else {
+            sqr();
         }
     } else if (time.getUTCHours() == 6) {
         if ((getDayInYear() % 6) == 1) {
             bidder('trf', '6i');
+        } else {
+            sqr();
         }
     } else if (time.getUTCHours() == 7) {
         if ((getDayInYear() % 5) == 1) {
             bidder('trf', '7i');
+        } else {
+            sqr();
         }
     } else if (time.getUTCHours() == 8) {
         logingService();
     } else if (time.getUTCHours() == 9) {
         if ((getDayInYear() % 2) == 1) {
             complementaryBidder('tt', 'p');
+        } else {
+            sqr();
         }
     } else if (time.getUTCHours() == 10) {
         if ((getDayInYear() % 3) == 1) {
             complementaryBidder('tt', 'm4');
+        } else {
+            sqr();
         }
     } else if (time.getUTCHours() == 11) {
         if ((getDayInYear() % 4) == 1) {
             complementaryBidder('tt', 'm5');
+        } else {
+            sqr();
         }
     } else if (time.getUTCHours() == 12) {
         if ((getDayInYear() % 5) == 1) {
             complementaryBidder('tt', 'n');
+        } else {
+            sqr();
         }
     } else if (time.getUTCHours() == 13) {
-
+        sqr();
     } else if (time.getUTCHours() == 14) {
-
+        sqr();
     } else if (time.getUTCHours() == 15) {
-
+        sqr();
     } else if (time.getUTCHours() == 16) {
-
+        sqr();
     } else if (time.getUTCHours() == 17) {
-
+        sqr();
     } else if (time.getUTCHours() == 18) {
-
+        sqr();
     }
 }
 
@@ -958,6 +987,7 @@ BigQueryKeywords = function (projectId, tableId, accountId, datasetId, tableSche
      */
     this.load = function () {
         var projectId = this.core.getProjectId();
+        var attempts = 2;
         var queryRequest = BigQuery.newQueryRequest();
         var query = "SELECT a.adgroup_id, a.keyword_id, a.parameter";
         query += " FROM [" + projectId + ":" + this.core.getDatasetId() + "." + this.core.getTableId() + "] a INNER JOIN (";
@@ -967,13 +997,31 @@ BigQueryKeywords = function (projectId, tableId, accountId, datasetId, tableSche
         query += ") b ON a.adgroup_id = b.adgroup_id AND a.keyword_id = b.keyword_id AND a.timestamp = b.timestamp";
         var queryRows = this.core.query(query);
         this.BigQueryData = {};
-        for (var i = 0; i < queryRows.length; i++) {
-            var row = queryRows[i];
-            var adGroupId = parseInt(row.f[0].v);
-            var keywordId = parseInt(row.f[1].v);
-            var key = adGroupId.toString() + "#" + keywordId.toString();
-            this.BigQueryData[key] = row.f[2].v;
+        if (queryRows.length > 0) {
+            for (var i = 0; i < queryRows.length; i++) {
+                var row = queryRows[i];
+                var adGroupId = parseInt(row.f[0].v);
+                var keywordId = parseInt(row.f[1].v);
+                var key = adGroupId.toString() + "#" + keywordId.toString();
+                this.BigQueryData[key] = row.f[2].v;
+            }
+        } else {
+            while (attempts > 0) {
+                Logger.log("Retrying. Attempts remaining :" + attempts);
+                queryRows = this.core.query(query);
+                if (queryRows.length > 0) {
+                    for (var i = 0; i < queryRows.length; i++) {
+                        var row = queryRows[i];
+                        var adGroupId = parseInt(row.f[0].v);
+                        var keywordId = parseInt(row.f[1].v);
+                        var key = adGroupId.toString() + "#" + keywordId.toString();
+                        this.BigQueryData[key] = row.f[2].v;
+                    }
+                }
+                attempts = attempts - 1;
+            }
         }
+
     };
 
     /**
@@ -982,6 +1030,7 @@ BigQueryKeywords = function (projectId, tableId, accountId, datasetId, tableSche
      */
     this.loadWithFilters = function (expression) {
         var projectId = this.core.getProjectId();
+        var attempts = 2;
         var queryRequest = BigQuery.newQueryRequest();
         var query = "SELECT a.adgroup_id, a.keyword_id, a.parameter";
         query += " FROM [" + projectId + ":" + this.core.getDatasetId() + "." + this.core.getTableId() + "] a INNER JOIN (";
@@ -992,12 +1041,29 @@ BigQueryKeywords = function (projectId, tableId, accountId, datasetId, tableSche
         query += " WHERE " + expression.toSQL();
         var queryRows = this.core.query(query);
         this.BigQueryData = {};
-        for (var i = 0; i < queryRows.length; i++) {
-            var row = queryRows[i];
-            var adGroupId = parseInt(row.f[0].v);
-            var keywordId = parseInt(row.f[1].v);
-            var key = adGroupId.toString() + "#" + keywordId.toString();
-            this.BigQueryData[key] = row.f[2].v;
+        if (queryRows.length > 0) {
+            for (var i = 0; i < queryRows.length; i++) {
+                var row = queryRows[i];
+                var adGroupId = parseInt(row.f[0].v);
+                var keywordId = parseInt(row.f[1].v);
+                var key = adGroupId.toString() + "#" + keywordId.toString();
+                this.BigQueryData[key] = row.f[2].v;
+            }
+        } else {
+            while (attempts > 0) {
+                Logger.log("Retrying. Attempts remaining :" + attempts);
+                queryRows = this.core.query(query);
+                if (queryRows.length > 0) {
+                    for (var i = 0; i < queryRows.length; i++) {
+                        var row = queryRows[i];
+                        var adGroupId = parseInt(row.f[0].v);
+                        var keywordId = parseInt(row.f[1].v);
+                        var key = adGroupId.toString() + "#" + keywordId.toString();
+                        this.BigQueryData[key] = row.f[2].v;
+                    }
+                }
+                attempts = attempts - 1;
+            }
         }
     };
 
@@ -3004,6 +3070,240 @@ function CleaningService() {
 
 }
 
+/**
+ * Creates all kinds of keywords based on SQR.
+ * 
+ * @returns {null}
+ */
+function SqrHandler() {
+
+    /**
+     * Creates negative keywords in the specified adgroups.
+     * 
+     * @return Returns nothing.
+     */
+    this.createAdGroupNegativeKeywords = function () {
+        var cid = AdWordsApp.currentAccount().getCustomerId().replace(/\-/g, "");
+        var keywords = [];
+        var dump = [];
+        var stmt = conn.prepareStatement('CALL `black-hole`.select_new_adgr_neg_kw_by_acc(?)');
+        stmt.setString(1, cid);
+        var results = stmt.executeQuery();
+        while (results.next()) {
+            keywords.push({"adgr_name": results.getObject('adgr_name'),
+                "searchterm": results.getObject('searchterm'),
+                "matchtype": results.getObject('matchtype')});
+        }
+        if (keywords.length > 0) {
+            var count = 0;
+            for (var i in keywords) {
+                var adGroupIterator = AdWordsApp
+                        .adGroups()
+                        .withCondition("Name CONTAINS '" + keywords[i]["adgr_name"] + "'")
+                        .get();
+                if (adGroupIterator.totalNumEntities() == 1) {
+                    adGroupIterator.next().createNegativeKeyword(formatKeywordByMatchtype(keywords[i]["searchterm"], keywords[i]["matchtype"]));
+                    count++;
+                } else {
+                    dump.push([cid, keywords[i]["adgr_name"], keywords[i]["searchterm"], keywords[i]["matchtype"], "Unresolved AdGroup"]);
+                }
+            }
+            Logger.log("AdGroup Negative Keywords Inserted: " + count);
+            if (dump.length > 0 && MailApp.getRemainingDailyQuota() > 0) {
+                var dumpMessage = "<ul>";
+                for (var i in dump) {
+                    dumpMessage += "<li>" + dump[i].join(", ") + "</li>";
+                }
+                dumpMessage += "</ul>";
+                MailApp.sendEmail({
+                    to: "yorgos@carflexi.com",
+                    cc: "akaintariscarflexi@gmail.com",
+                    name: "CarFlexi SQR Script Services",
+                    subject: "AdGroup Negative Keywords not Inserted in " + cid,
+                    htmlBody: dumpMessage
+                });
+                Logger.log("Sent an e-mail for AdGroup Negative Keywords not Inserted.");
+            }
+            var stmt = conn.prepareStatement('CALL `black-hole`.remove_new_adgr_neg_kw_by_acc(?)');
+            stmt.setString(1, cid);
+            stmt.addBatch();
+            var batch = stmt.executeBatch();
+            conn.commit();
+            Logger.log("New AdGroup Negative Keywords removed from database queue");
+        } else {
+            Logger.log("No AdGroup Negative Keywords");
+        }
+    }
+
+    /**
+     * Creates negative keywords in the specified campaigns.
+     * 
+     * @return Returns nothing.
+     */
+    this.createCampaignNegativeKeywords = function () {
+        var cid = AdWordsApp.currentAccount().getCustomerId().replace(/\-/g, "");
+        var keywords = [];
+        var dump = [];
+        var stmt = conn.prepareStatement('CALL `black-hole`.select_new_camp_neg_kw_by_acc(?)');
+        stmt.setString(1, cid);
+        var results = stmt.executeQuery();
+        while (results.next()) {
+            keywords.push({"camp_name": results.getObject('camp_name'),
+                "searchterm": results.getObject('searchterm'),
+                "matchtype": results.getObject('matchtype')});
+        }
+        if (keywords.length > 0) {
+            var count = 0;
+            for (var i in keywords) {
+                var campaignIterator = AdWordsApp
+                        .campaigns()
+                        .withCondition("Name CONTAINS '" + keywords[i]["camp_name"] + "'")
+                        .get();
+                if (campaignIterator.totalNumEntities() == 1) {
+                    campaignIterator.next().createNegativeKeyword(formatKeywordByMatchtype(keywords[i]["searchterm"], keywords[i]["matchtype"]));
+                    count++;
+                } else {
+                    dump.push([cid, keywords[i]["camp_name"], keywords[i]["searchterm"], keywords[i]["matchtype"], "Unresolved Campaign"]);
+                }
+            }
+            Logger.log("Campaign Negative Keywords Inserted: " + count);
+            if (dump.length > 0 && MailApp.getRemainingDailyQuota() > 0) {
+                var dumpMessage = "<ul>";
+                for (var i in dump) {
+                    dumpMessage += "<li>" + dump[i].join(", ") + "</li>";
+                }
+                dumpMessage += "</ul>";
+                MailApp.sendEmail({
+                    to: "yorgos@carflexi.com",
+                    cc: "akaintariscarflexi@gmail.com",
+                    name: "CarFlexi SQR Script Services",
+                    subject: "Campaign Negative Keywords not Inserted in " + cid,
+                    htmlBody: dumpMessage
+                });
+                Logger.log("Sent an e-mail for Campaign Negative Keywords not Inserted.");
+            }
+            var stmt = conn.prepareStatement('CALL `black-hole`.remove_new_camp_neg_kw_by_acc(?)');
+            stmt.setString(1, cid);
+            stmt.addBatch();
+            var batch = stmt.executeBatch();
+            conn.commit();
+            Logger.log("New Campaign Negative Keywords removed from database queue");
+        } else {
+            Logger.log("No Campaign Negative Keywords");
+        }
+    }
+
+    /**
+     * Creates positive keywords in the specified campaigns, adgroups.
+     * 
+     * @return Returns nothing.
+     */
+    this.createPositiveKeywords = function () {
+        var cid = AdWordsApp.currentAccount().getCustomerId().replace(/\-/g, "");
+        var keywords = [];
+        var dump = [];
+        var stmt = conn.prepareStatement('CALL `black-hole`.select_new_positive_kw_by_acc(?)');
+        stmt.setString(1, cid);
+        var results = stmt.executeQuery();
+        while (results.next()) {
+            keywords.push({"adgr_name": results.getObject('adgr_name'),
+                "keyword": results.getObject('keyword'),
+                "searchterm": results.getObject('searchterm'),
+                "matchtype": results.getObject('matchtype'),
+                "cpc": results.getObject('cpc'),
+                "keep_flag": results.getObject('keep_flag')});
+        }
+        if (keywords.length > 0) {
+            var count = 0;
+            for (var i in keywords) {
+                var keywordIterator = AdWordsApp
+                        .keywords()
+                        .withCondition("AdGroupName CONTAINS '" + keywords[i]["adgr_name"] + "'")
+                        .withCondition("Text = '" + keywords[i]["keyword"].replace("[", "").replace("]", "").replace("\"", "").replace("\"", "") + "'")
+                        .get();
+                if (keywordIterator.totalNumEntities() >= 1) {
+                    var adGroupIterator = AdWordsApp
+                            .adGroups()
+                            .withCondition("AdGroupName CONTAINS '" + keywords[i]["adgr_name"] + "'")
+                            .get();
+                    if (adGroupIterator.totalNumEntities() == 1) {
+                        var parentUrls = keywordIterator.next().urls();
+                        adGroupIterator.next().newKeywordBuilder()
+                                .withText(formatKeywordByMatchtype(keywords[i]["searchterm"], keywords[i]["matchtype"]))
+                                .withCpc(keywords[i]["cpc"])
+                                .withCustomParameters(parentUrls.getCustomParameters())
+                                .withFinalUrl(parentUrls.getFinalUrl().replace(/{ignore}.*/, "{ignore}&keep=" + keywords[i]["keep_flag"]))
+                                .build();
+                        count++;
+                    } else {
+                        dump.push([cid, keywords[i]["adgr_name"], keywords[i]["keyword"], keywords[i]["searchterm"], keywords[i]["matchtype"], keywords[i]["cpc"], keywords[i]["keep_flag"], "Unresolved AdGroup"]);
+                    }
+                } else {
+                    dump.push([cid, keywords[i]["adgr_name"], keywords[i]["keyword"], keywords[i]["searchterm"], keywords[i]["matchtype"], keywords[i]["cpc"], keywords[i]["keep_flag"], "Unresolved Keyword/AdGroup"]);
+                }
+            }
+            Logger.log("Positive Keywords Inserted: " + count);
+            if (dump.length > 0 && MailApp.getRemainingDailyQuota() > 0) {
+                var dumpMessage = "<ul>";
+                for (var i in dump) {
+                    dumpMessage += "<li>" + dump[i].join(", ") + "</li>";
+                }
+                dumpMessage += "</ul>";
+                MailApp.sendEmail({
+                    to: "yorgos@carflexi.com",
+                    cc: "akaintariscarflexi@gmail.com",
+                    name: "CarFlexi SQR Script Services",
+                    subject: "Positive Keywords not Inserted in " + cid,
+                    htmlBody: dumpMessage
+                });
+                Logger.log("Sent an e-mail for Positive Keywords not Inserted.");
+            }
+            var stmt = conn.prepareStatement('CALL `black-hole`.remove_new_positive_kw_by_acc(?)');
+            stmt.setString(1, cid);
+            stmt.addBatch();
+            var batch = stmt.executeBatch();
+            conn.commit();
+            Logger.log("New Positive Keywords removed from database queue");
+        } else {
+            Logger.log("No Positive Keywords");
+        }
+    }
+
+    /**
+     * Converts plain keyword text to imply its matchtype through its text.
+     * 
+     * <p>
+     * Exact keywords are prefixed with '[' and suffixed with ']'.<br>
+     * Phrase keywords are surrounded with '"'.<br>
+     * Broad keywords remain untouched.
+     * </p>
+     * <p>
+     * Does not format Broad keywords to Broad Match Modified (BMM).<br>
+     * Those keywords should be provided in BMM format (with '+' where appropriate).
+     * </p>
+     * 
+     * @param keywordText
+     *            Plain text of the keyword.
+     * @param matchtype
+     *            Matchtype of the keyword in range [E, P, B].
+     * @returns {String} The formated keyword.
+     */
+    function formatKeywordByMatchtype(keywordText, matchtype) {
+        var formatedKeyword = "";
+        if (matchtype == "E") {
+            formatedKeyword = "[" + keywordText + "]";
+        } else if (matchtype == "P") {
+            formatedKeyword = "\"" + keywordText + "\"";
+        } else if (matchtype == "B") {
+            formatedKeyword = keywordText;
+        } else {
+            // Send Mail On Error
+        }
+        return formatedKeyword;
+    }
+
+}
+
 function clear() {
     BD.TIMESTAMP.stamp('clearBQ', 'Started');
     var myBQ = new BigQueryKeywords(BD.BQ_PROJECT_ID);
@@ -3025,6 +3325,17 @@ function clear() {
     BD.TIMESTAMP.stamp('CleaningService', 'Finished');
 }
 
+function sqr() {
+    conn = Jdbc.getConnection(BD.JDBC.URL.BASE, BD.JDBC.USER, BD.JDBC.PASS);
+    conn.setAutoCommit(false);
+
+    handler = new SqrHandler();
+    handler.createAdGroupNegativeKeywords();
+    handler.createCampaignNegativeKeywords();
+    handler.createPositiveKeywords();
+
+    conn.close();
+}
 function adPauser() {
     BD.TIMESTAMP.stamp('Ad Pauser', 'Started');
     var dateFormater = new AWQLDateFormatter();
