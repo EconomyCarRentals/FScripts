@@ -3133,7 +3133,7 @@ function SqrHandler() {
         } else {
             Logger.log("No AdGroup Negative Keywords");
         }
-    }
+    };
 
     /**
      * Creates negative keywords in the specified campaigns.
@@ -3191,7 +3191,7 @@ function SqrHandler() {
         } else {
             Logger.log("No Campaign Negative Keywords");
         }
-    }
+    };
 
     /**
      * Creates positive keywords in the specified campaigns, adgroups.
@@ -3267,7 +3267,7 @@ function SqrHandler() {
         } else {
             Logger.log("No Positive Keywords");
         }
-    }
+    };
 
     /**
      * Converts plain keyword text to imply its matchtype through its text.
