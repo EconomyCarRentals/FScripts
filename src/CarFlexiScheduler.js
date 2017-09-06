@@ -1,4 +1,10 @@
 /**
+ * @Version 4.6.3
+ * @Author Argiris
+ * @Date 29/08/2017
+ * @Changelog Changed AllConversions and AllConversionValue to Conversions and
+ *            ConversionValue respectively
+ * 
  * @Version 4.6.2
  * @Author Argiris
  * @Date 16/08/2017
@@ -194,7 +200,7 @@
 
 function main() {
     BD = {};
-    BD.VERSION = "4.6.2";
+    BD.VERSION = "4.6.3";
     BD.ACC = {};
     BD.CAMP = {};
     BD.ADGR = {};
@@ -3390,7 +3396,7 @@ function adPauser() {
     awqlBuilder.addAttribute("Impressions");
     awqlBuilder.addAttribute("ClickAssistedConversionValue");
     awqlBuilder.addAttribute("AdGroupName");
-    awqlBuilder.addAttribute("AllConversionValue");
+    awqlBuilder.addAttribute("ConversionValue");
     awqlBuilder.addAttribute("Cost");
     awqlBuilder.addAttribute("Ctr");
     awqlBuilder.setReportType("AD_PERFORMANCE_REPORT");
@@ -3415,7 +3421,7 @@ function adPauser() {
                 .replace(/,/g, "")));
         var ctr = roundToTwo(parseFloat((item.Ctr).replace(/,/g, "")));
         var cost = roundToTwo(parseFloat((item.Cost).replace(/,/g, "")));
-        var regValue = parseFloat((item.AllConversionValue).replace(/,/g, ""));
+        var regValue = parseFloat((item.ConversionValue).replace(/,/g, ""));
         var assValue = parseFloat((item.ClickAssistedConversionValue)
                 .replace(/,/g, ""));
         var totValue = regValue + assValue * BD.AD.ASSISTED_COEFF;
@@ -3481,9 +3487,9 @@ function keywordPauser() {
         awqlBuilder.addAttribute("Id");
         awqlBuilder.addAttribute("AdGroupId");
         awqlBuilder.addAttribute("Cost");
-        awqlBuilder.addAttribute("AllConversions");
+        awqlBuilder.addAttribute("Conversions");
         awqlBuilder.addAttribute("ClickAssistedConversions");
-        awqlBuilder.addAttribute("AllConversionValue");
+        awqlBuilder.addAttribute("ConversionValue");
         awqlBuilder.addAttribute("ClickAssistedConversionValue");
         awqlBuilder.setReportType("KEYWORDS_PERFORMANCE_REPORT");
         awqlBuilder.addCondition("AdGroupId IN [" + aIds + "]");
@@ -3503,10 +3509,10 @@ function keywordPauser() {
             var kwId = item.Id;
             var adGrId = item.AdGroupId;
             var cost = roundToTwo(parseFloat((item.Cost).replace(/,/g, "")));
-            var regConv = parseFloat((item.AllConversions).replace(/,/g, ""));
+            var regConv = parseFloat((item.Conversions).replace(/,/g, ""));
             var assConv = parseFloat((item.ClickAssistedConversions).replace(/,/g, ""));
             var totConv = regConv + assConv;
-            var regValue = parseFloat((item.AllConversionValue).replace(/,/g, ""));
+            var regValue = parseFloat((item.ConversionValue).replace(/,/g, ""));
             var assValue = parseFloat((item.ClickAssistedConversionValue).replace(/,/g, ""));
             var totValue = regValue + assValue;
             if (cost == 0 && totValue > 0) {
@@ -3528,9 +3534,9 @@ function adgroupPauser() {
     var pauser = new AdGroupPauser();
     awqlBuilder.addAttribute("AdGroupId");
     awqlBuilder.addAttribute("Cost");
-    awqlBuilder.addAttribute("AllConversions");
+    awqlBuilder.addAttribute("Conversions");
     awqlBuilder.addAttribute("ClickAssistedConversions");
-    awqlBuilder.addAttribute("AllConversionValue");
+    awqlBuilder.addAttribute("ConversionValue");
     awqlBuilder.addAttribute("ClickAssistedConversionValue");
     awqlBuilder.setReportType("ADGROUP_PERFORMANCE_REPORT");
     awqlBuilder.addCondition("CampaignStatus != REMOVED");
@@ -3550,10 +3556,10 @@ function adgroupPauser() {
         var item = rows.next();
         var id = item.AdGroupId;
         var cost = roundToTwo(parseFloat((item.Cost).replace(/,/g, "")));
-        var regConv = parseFloat((item.AllConversions).replace(/,/g, ""));
+        var regConv = parseFloat((item.Conversions).replace(/,/g, ""));
         var assConv = parseFloat((item.ClickAssistedConversions).replace(/,/g, ""));
         var totConv = regConv + assConv;
-        var regValue = parseFloat((item.AllConversionValue).replace(/,/g, ""));
+        var regValue = parseFloat((item.ConversionValue).replace(/,/g, ""));
         var assValue = parseFloat((item.ClickAssistedConversionValue).replace(/,/g, ""));
         var totValue = regValue + assValue;
         if (cost == 0 && totValue > 0) {
@@ -3574,9 +3580,9 @@ function campaignPauser() {
     var pauser = new CampaignPauser();
     awqlBuilder.addAttribute("CampaignId");
     awqlBuilder.addAttribute("Cost");
-    awqlBuilder.addAttribute("AllConversions");
+    awqlBuilder.addAttribute("Conversions");
     awqlBuilder.addAttribute("ClickAssistedConversions");
-    awqlBuilder.addAttribute("AllConversionValue");
+    awqlBuilder.addAttribute("ConversionValue");
     awqlBuilder.addAttribute("ClickAssistedConversionValue");
     awqlBuilder.setReportType("CAMPAIGN_PERFORMANCE_REPORT");
     awqlBuilder.addCondition("CampaignStatus != REMOVED");
@@ -3594,10 +3600,10 @@ function campaignPauser() {
         var item = rows.next();
         var id = item.CampaignId;
         var cost = roundToTwo(parseFloat((item.Cost).replace(/,/g, "")));
-        var regConv = parseFloat((item.AllConversions).replace(/,/g, ""));
+        var regConv = parseFloat((item.Conversions).replace(/,/g, ""));
         var assConv = parseFloat((item.ClickAssistedConversions).replace(/,/g, ""));
         var totConv = regConv + assConv;
-        var regValue = parseFloat((item.AllConversionValue).replace(/,/g, ""));
+        var regValue = parseFloat((item.ConversionValue).replace(/,/g, ""));
         var assValue = parseFloat((item.ClickAssistedConversionValue).replace(/,/g, ""));
         var totValue = regValue + assValue;
         if (cost == 0 && totValue > 0) {
@@ -3637,8 +3643,8 @@ function ccCampaign() {
     awqlBuilder.addAttribute("CampaignName");
     awqlBuilder.addAttribute("ClickAssistedConversions");
     awqlBuilder.addAttribute("ClickAssistedConversionValue");
-    awqlBuilder.addAttribute("AllConversions");
-    awqlBuilder.addAttribute("AllConversionValue");
+    awqlBuilder.addAttribute("Conversions");
+    awqlBuilder.addAttribute("ConversionValue");
     awqlBuilder.addAttribute("Cost");
     awqlBuilder.addAttribute("Clicks");
     awqlBuilder.setReportType("CAMPAIGN_PERFORMANCE_REPORT");
@@ -3656,10 +3662,10 @@ function ccCampaign() {
         var country = name.match(/\$C[0-9]*\$/);
         var clicks = parseFloat((item.Clicks).replace(/,/g, ""));
         var cost = roundToTwo(parseFloat((item.Cost).replace(/,/g, "")));
-        var regConv = parseFloat((item.AllConversions).replace(/,/g, ""));
+        var regConv = parseFloat((item.Conversions).replace(/,/g, ""));
         var assConv = parseFloat((item.ClickAssistedConversions)
                 .replace(/,/g, ""));
-        var regValue = parseFloat((item.AllConversionValue).replace(/,/g, ""));
+        var regValue = parseFloat((item.ConversionValue).replace(/,/g, ""));
         var assValue = parseFloat((item.ClickAssistedConversionValue)
                 .replace(/,/g, ""));
         if (countryMap[country[0]] != null) {
@@ -3790,9 +3796,9 @@ function aaKeyword() {
     awqlBuilder.addAttribute("AdGroupId");
     awqlBuilder.addAttribute("ClickAssistedConversions");
     awqlBuilder.addAttribute("ClickAssistedConversionValue");
-    awqlBuilder.addAttribute("AllConversions");
+    awqlBuilder.addAttribute("Conversions");
     awqlBuilder.addAttribute("AdGroupName");
-    awqlBuilder.addAttribute("AllConversionValue");
+    awqlBuilder.addAttribute("ConversionValue");
     awqlBuilder.addAttribute("Cost");
     awqlBuilder.addAttribute("Clicks");
     awqlBuilder.setReportType("KEYWORDS_PERFORMANCE_REPORT");
@@ -3815,10 +3821,10 @@ function aaKeyword() {
         adgroupKpi.loadContainer(adrgName);
         var clicks = parseFloat((item.Clicks).replace(/,/g, ""));
         var cost = roundToTwo(parseFloat((item.Cost).replace(/,/g, "")));
-        var regConv = parseFloat((item.AllConversions).replace(/,/g, ""));
+        var regConv = parseFloat((item.Conversions).replace(/,/g, ""));
         var assConv = parseFloat((item.ClickAssistedConversions)
                 .replace(/,/g, ""));
-        var regValue = parseFloat((item.AllConversionValue).replace(/,/g, ""));
+        var regValue = parseFloat((item.ConversionValue).replace(/,/g, ""));
         var assValue = parseFloat((item.ClickAssistedConversionValue)
                 .replace(/,/g, ""));
         var totConv = regConv + assConv * BD.KEYW.ASSISTED_COEFF;
@@ -3906,9 +3912,9 @@ function aaAdgroup() {
     awqlBuilder.addAttribute("AdGroupId");
     awqlBuilder.addAttribute("ClickAssistedConversions");
     awqlBuilder.addAttribute("ClickAssistedConversionValue");
-    awqlBuilder.addAttribute("AllConversions");
+    awqlBuilder.addAttribute("Conversions");
     awqlBuilder.addAttribute("CampaignName");
-    awqlBuilder.addAttribute("AllConversionValue");
+    awqlBuilder.addAttribute("ConversionValue");
     awqlBuilder.addAttribute("Cost");
     awqlBuilder.addAttribute("Clicks");
     awqlBuilder.setReportType("ADGROUP_PERFORMANCE_REPORT");
@@ -3927,10 +3933,10 @@ function aaAdgroup() {
         campaignKpi.loadContainer(campName);
         var clicks = parseFloat((item.Clicks).replace(/,/g, ""));
         var cost = roundToTwo(parseFloat((item.Cost).replace(/,/g, "")));
-        var regConv = parseFloat((item.AllConversions).replace(/,/g, ""));
+        var regConv = parseFloat((item.Conversions).replace(/,/g, ""));
         var assConv = parseFloat((item.ClickAssistedConversions)
                 .replace(/,/g, ""));
-        var regValue = parseFloat((item.AllConversionValue).replace(/,/g, ""));
+        var regValue = parseFloat((item.ConversionValue).replace(/,/g, ""));
         var assValue = parseFloat((item.ClickAssistedConversionValue)
                 .replace(/,/g, ""));
         var totConv = regConv + assConv * BD.ADGR.ASSISTED_COEFF;
@@ -4017,9 +4023,9 @@ function aaCampaign() {
     awqlBuilder.addAttribute("CampaignId");
     awqlBuilder.addAttribute("ClickAssistedConversions");
     awqlBuilder.addAttribute("ClickAssistedConversionValue");
-    awqlBuilder.addAttribute("AllConversions");
+    awqlBuilder.addAttribute("Conversions");
     awqlBuilder.addAttribute("CampaignName");
-    awqlBuilder.addAttribute("AllConversionValue");
+    awqlBuilder.addAttribute("ConversionValue");
     awqlBuilder.addAttribute("Cost");
     awqlBuilder.addAttribute("Clicks");
     awqlBuilder.setReportType("CAMPAIGN_PERFORMANCE_REPORT");
@@ -4037,10 +4043,10 @@ function aaCampaign() {
         campaignKpi.loadContainer(campName);
         var clicks = parseFloat((item.Clicks).replace(/,/g, ""));
         var cost = roundToTwo(parseFloat((item.Cost).replace(/,/g, "")));
-        var regConv = parseFloat((item.AllConversions).replace(/,/g, ""));
+        var regConv = parseFloat((item.Conversions).replace(/,/g, ""));
         var assConv = parseFloat((item.ClickAssistedConversions)
                 .replace(/,/g, ""));
-        var regValue = parseFloat((item.AllConversionValue).replace(/,/g, ""));
+        var regValue = parseFloat((item.ConversionValue).replace(/,/g, ""));
         var assValue = parseFloat((item.ClickAssistedConversionValue)
                 .replace(/,/g, ""));
         var totConv = regConv + assConv * BD.CAMP.ASSISTED_COEFF;
@@ -4133,8 +4139,8 @@ function aaAccount() {
     awqlBuilder.addAttribute("CampaignId");
     awqlBuilder.addAttribute("ClickAssistedConversions");
     awqlBuilder.addAttribute("ClickAssistedConversionValue");
-    awqlBuilder.addAttribute("AllConversions");
-    awqlBuilder.addAttribute("AllConversionValue");
+    awqlBuilder.addAttribute("Conversions");
+    awqlBuilder.addAttribute("ConversionValue");
     awqlBuilder.addAttribute("Cost");
     awqlBuilder.addAttribute("Clicks");
     awqlBuilder.setReportType("CAMPAIGN_PERFORMANCE_REPORT");
@@ -4150,10 +4156,10 @@ function aaAccount() {
         var id = item.CampaignId;
         clicks += parseFloat((item.Clicks).replace(/,/g, ""));
         cost += roundToTwo(parseFloat((item.Cost).replace(/,/g, "")));
-        regConv += parseFloat((item.AllConversions).replace(/,/g, ""));
+        regConv += parseFloat((item.Conversions).replace(/,/g, ""));
         assConv += parseFloat((item.ClickAssistedConversions)
                 .replace(/,/g, ""));
-        regValue += parseFloat((item.AllConversionValue).replace(/,/g, ""));
+        regValue += parseFloat((item.ConversionValue).replace(/,/g, ""));
         assValue += parseFloat((item.ClickAssistedConversionValue)
                 .replace(/,/g, ""));
     }
@@ -4218,8 +4224,8 @@ function ssKeyword() {
     awqlBuilder.addAttribute("AdGroupId");
     awqlBuilder.addAttribute("ClickAssistedConversions");
     awqlBuilder.addAttribute("ClickAssistedConversionValue");
-    awqlBuilder.addAttribute("AllConversions");
-    awqlBuilder.addAttribute("AllConversionValue");
+    awqlBuilder.addAttribute("Conversions");
+    awqlBuilder.addAttribute("ConversionValue");
     awqlBuilder.addAttribute("Cost");
     awqlBuilder.addAttribute("Clicks");
     awqlBuilder.setReportType("KEYWORDS_PERFORMANCE_REPORT");
@@ -4242,10 +4248,10 @@ function ssKeyword() {
         keywordKpi.loadContainer(url);
         var clicks = parseFloat((item.Clicks).replace(/,/g, ""));
         var cost = roundToTwo(parseFloat((item.Cost).replace(/,/g, "")));
-        var regConv = parseFloat((item.AllConversions).replace(/,/g, ""));
+        var regConv = parseFloat((item.Conversions).replace(/,/g, ""));
         var assConv = parseFloat((item.ClickAssistedConversions)
                 .replace(/,/g, ""));
-        var regValue = parseFloat((item.AllConversionValue).replace(/,/g, ""));
+        var regValue = parseFloat((item.ConversionValue).replace(/,/g, ""));
         var assValue = parseFloat((item.ClickAssistedConversionValue)
                 .replace(/,/g, ""));
         var totConv = regConv + assConv * BD.KEYW.ASSISTED_COEFF;
@@ -4332,9 +4338,9 @@ function ssAdgroup() {
     awqlBuilder.addAttribute("AdGroupId");
     awqlBuilder.addAttribute("ClickAssistedConversions");
     awqlBuilder.addAttribute("ClickAssistedConversionValue");
-    awqlBuilder.addAttribute("AllConversions");
+    awqlBuilder.addAttribute("Conversions");
     awqlBuilder.addAttribute("AdGroupName");
-    awqlBuilder.addAttribute("AllConversionValue");
+    awqlBuilder.addAttribute("ConversionValue");
     awqlBuilder.addAttribute("Cost");
     awqlBuilder.addAttribute("Clicks");
     awqlBuilder.setReportType("ADGROUP_PERFORMANCE_REPORT");
@@ -4352,10 +4358,10 @@ function ssAdgroup() {
         adgroupKpi.loadContainer(adrgName);
         var clicks = parseFloat((item.Clicks).replace(/,/g, ""));
         var cost = roundToTwo(parseFloat((item.Cost).replace(/,/g, "")));
-        var regConv = parseFloat((item.AllConversions).replace(/,/g, ""));
+        var regConv = parseFloat((item.Conversions).replace(/,/g, ""));
         var assConv = parseFloat((item.ClickAssistedConversions)
                 .replace(/,/g, ""));
-        var regValue = parseFloat((item.AllConversionValue).replace(/,/g, ""));
+        var regValue = parseFloat((item.ConversionValue).replace(/,/g, ""));
         var assValue = parseFloat((item.ClickAssistedConversionValue)
                 .replace(/,/g, ""));
         var totConv = regConv + assConv * BD.ADGR.ASSISTED_COEFF;
@@ -4441,9 +4447,9 @@ function ssCampaign() {
     awqlBuilder.addAttribute("CampaignId");
     awqlBuilder.addAttribute("ClickAssistedConversions");
     awqlBuilder.addAttribute("ClickAssistedConversionValue");
-    awqlBuilder.addAttribute("AllConversions");
+    awqlBuilder.addAttribute("Conversions");
     awqlBuilder.addAttribute("CampaignName");
-    awqlBuilder.addAttribute("AllConversionValue");
+    awqlBuilder.addAttribute("ConversionValue");
     awqlBuilder.addAttribute("Cost");
     awqlBuilder.addAttribute("Clicks");
     awqlBuilder.setReportType("CAMPAIGN_PERFORMANCE_REPORT");
@@ -4460,10 +4466,10 @@ function ssCampaign() {
         campaignKpi.loadContainer(campName);
         var clicks = parseFloat((item.Clicks).replace(/,/g, ""));
         var cost = roundToTwo(parseFloat((item.Cost).replace(/,/g, "")));
-        var regConv = parseFloat((item.AllConversions).replace(/,/g, ""));
+        var regConv = parseFloat((item.Conversions).replace(/,/g, ""));
         var assConv = parseFloat((item.ClickAssistedConversions)
                 .replace(/,/g, ""));
-        var regValue = parseFloat((item.AllConversionValue).replace(/,/g, ""));
+        var regValue = parseFloat((item.ConversionValue).replace(/,/g, ""));
         var assValue = parseFloat((item.ClickAssistedConversionValue)
                 .replace(/,/g, ""));
         var totConv = regConv + assConv * BD.CAMP.ASSISTED_COEFF;
@@ -4566,8 +4572,8 @@ function ssAccount() {
     awqlBuilder.addAttribute("CampaignId");
     awqlBuilder.addAttribute("ClickAssistedConversions");
     awqlBuilder.addAttribute("ClickAssistedConversionValue");
-    awqlBuilder.addAttribute("AllConversions");
-    awqlBuilder.addAttribute("AllConversionValue");
+    awqlBuilder.addAttribute("Conversions");
+    awqlBuilder.addAttribute("ConversionValue");
     awqlBuilder.addAttribute("Cost");
     awqlBuilder.addAttribute("Clicks");
     awqlBuilder.setReportType("CAMPAIGN_PERFORMANCE_REPORT");
@@ -4582,10 +4588,10 @@ function ssAccount() {
         var id = item.CampaignId;
         clicks += parseFloat((item.Clicks).replace(/,/g, ""));
         cost += roundToTwo(parseFloat((item.Cost).replace(/,/g, "")));
-        regConv += parseFloat((item.AllConversions).replace(/,/g, ""));
+        regConv += parseFloat((item.Conversions).replace(/,/g, ""));
         assConv += parseFloat((item.ClickAssistedConversions)
                 .replace(/,/g, ""));
-        regValue += parseFloat((item.AllConversionValue).replace(/,/g, ""));
+        regValue += parseFloat((item.ConversionValue).replace(/,/g, ""));
         assValue += parseFloat((item.ClickAssistedConversionValue)
                 .replace(/,/g, ""));
     }
@@ -4663,8 +4669,8 @@ function sdKeyword() {
     awqlBuilder.addAttribute("AdGroupId");
     awqlBuilder.addAttribute("ClickAssistedConversions");
     awqlBuilder.addAttribute("ClickAssistedConversionValue");
-    awqlBuilder.addAttribute("AllConversions");
-    awqlBuilder.addAttribute("AllConversionValue");
+    awqlBuilder.addAttribute("Conversions");
+    awqlBuilder.addAttribute("ConversionValue");
     awqlBuilder.addAttribute("Cost");
     awqlBuilder.addAttribute("Clicks");
     awqlBuilder.setReportType("KEYWORDS_PERFORMANCE_REPORT");
@@ -4687,10 +4693,10 @@ function sdKeyword() {
         keywordKpi.loadContainer(url);
         var clicks = parseFloat((item.Clicks).replace(/,/g, ""));
         var cost = roundToTwo(parseFloat((item.Cost).replace(/,/g, "")));
-        var regConv = parseFloat((item.AllConversions).replace(/,/g, ""));
+        var regConv = parseFloat((item.Conversions).replace(/,/g, ""));
         var assConv = parseFloat((item.ClickAssistedConversions)
                 .replace(/,/g, ""));
-        var regValue = parseFloat((item.AllConversionValue).replace(/,/g, ""));
+        var regValue = parseFloat((item.ConversionValue).replace(/,/g, ""));
         var assValue = parseFloat((item.ClickAssistedConversionValue)
                 .replace(/,/g, ""));
         var totConv = regConv + assConv * BD.KEYW.ASSISTED_COEFF;
@@ -4777,9 +4783,9 @@ function sdAdgroup() {
     awqlBuilder.addAttribute("AdGroupId");
     awqlBuilder.addAttribute("ClickAssistedConversions");
     awqlBuilder.addAttribute("ClickAssistedConversionValue");
-    awqlBuilder.addAttribute("AllConversions");
+    awqlBuilder.addAttribute("Conversions");
     awqlBuilder.addAttribute("AdGroupName");
-    awqlBuilder.addAttribute("AllConversionValue");
+    awqlBuilder.addAttribute("ConversionValue");
     awqlBuilder.addAttribute("Cost");
     awqlBuilder.addAttribute("Clicks");
     awqlBuilder.setReportType("ADGROUP_PERFORMANCE_REPORT");
@@ -4797,10 +4803,10 @@ function sdAdgroup() {
         adgroupKpi.loadContainer(adrgName);
         var clicks = parseFloat((item.Clicks).replace(/,/g, ""));
         var cost = roundToTwo(parseFloat((item.Cost).replace(/,/g, "")));
-        var regConv = parseFloat((item.AllConversions).replace(/,/g, ""));
+        var regConv = parseFloat((item.Conversions).replace(/,/g, ""));
         var assConv = parseFloat((item.ClickAssistedConversions)
                 .replace(/,/g, ""));
-        var regValue = parseFloat((item.AllConversionValue).replace(/,/g, ""));
+        var regValue = parseFloat((item.ConversionValue).replace(/,/g, ""));
         var assValue = parseFloat((item.ClickAssistedConversionValue)
                 .replace(/,/g, ""));
         var totConv = regConv + assConv * BD.ADGR.ASSISTED_COEFF;
@@ -5379,7 +5385,7 @@ function cpKeyword() {
             awqlBuilder.addAttribute("AdGroupName");
             awqlBuilder.addAttribute("CampaignName");
             awqlBuilder.addAttribute("AveragePosition");
-            awqlBuilder.addAttribute("AllConversionValue");
+            awqlBuilder.addAttribute("ConversionValue");
             awqlBuilder.addAttribute("Cost");
             awqlBuilder.addAttribute("ClickAssistedConversionValue");
             awqlBuilder.addAttribute("CpcBid");
@@ -5419,7 +5425,7 @@ function cpKeyword() {
                 var matchType = item.KeywordMatchType;
                 var impressions = parseFloat(item.Impressions.replace(/,/g, ""));
                 var cost = roundToTwo(parseFloat((item.Cost).replace(/,/g, "")));
-                var regValue = parseFloat((item.AllConversionValue)
+                var regValue = parseFloat((item.ConversionValue)
                         .replace(/,/g, ""));
                 var assValue = parseFloat((item.ClickAssistedConversionValue)
                         .replace(/,/g, ""));
