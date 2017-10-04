@@ -1,4 +1,9 @@
 /**
+ * @Version 4.7.1
+ * @Author Argiris
+ * @Date 04/10/2017
+ * @Changelog Stopped executiondump
+ * 
  * @Version 4.7
  * @Author Fotis/Argiris
  * @Date 08/09/2017
@@ -205,7 +210,7 @@
 
 function main() {
     BD = {};
-    BD.VERSION = "4.7";
+    BD.VERSION = "4.7.1";
     BD.ACC = {};
     BD.CAMP = {};
     BD.ADGR = {};
@@ -1220,17 +1225,17 @@ function TimestampService() {
      */
     this.stamp = function (scriptName, comment) {
         Logger.log(Utilities.formatDate(new Date(), "UTC", "z EEE yyyy.MM.dd-HH:mm:ss:SSS") + "\t" + comment + ": " + scriptName);
-        var conn = Jdbc.getConnection(BD.JDBC.URL.BASE + BD.JDBC.URL.SCHEMA.LOG, BD.JDBC.USER, BD.JDBC.PASS);
-        conn.setAutoCommit(false);
-        var stmt = conn.prepareStatement('CALL insert_execlog(?, ?, ?, ?)');
-        stmt.setLong(1, AdWordsApp.currentAccount().getCustomerId().replace(/-/g, ""));
-        stmt.setString(2, scriptName);
-        stmt.setString(3, comment);
-        stmt.setString(4, AdWordsApp.getExecutionInfo().isPreview() ? 'PREVIEW' : 'LIVE');
-        stmt.addBatch();
-        stmt.executeBatch();
-        conn.commit();
-        conn.close();
+//        var conn = Jdbc.getConnection(BD.JDBC.URL.BASE + BD.JDBC.URL.SCHEMA.LOG, BD.JDBC.USER, BD.JDBC.PASS);
+//        conn.setAutoCommit(false);
+//        var stmt = conn.prepareStatement('CALL insert_execlog(?, ?, ?, ?)');
+//        stmt.setLong(1, AdWordsApp.currentAccount().getCustomerId().replace(/-/g, ""));
+//        stmt.setString(2, scriptName);
+//        stmt.setString(3, comment);
+//        stmt.setString(4, AdWordsApp.getExecutionInfo().isPreview() ? 'PREVIEW' : 'LIVE');
+//        stmt.addBatch();
+//        stmt.executeBatch();
+//        conn.commit();=
+//        conn.close();
     };
 
     /**
