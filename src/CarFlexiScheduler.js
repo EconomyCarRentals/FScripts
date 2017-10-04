@@ -2,7 +2,7 @@
  * @Version 4.7.1
  * @Author Argiris
  * @Date 04/10/2017
- * @Changelog Stopped executiondump
+ * @Changelog Stopped executiondump, script version once per day
  * 
  * @Version 4.7
  * @Author Fotis/Argiris
@@ -335,8 +335,11 @@ function main() {
         8: "n8",
         9: "n9"
     };
-    BD.TIMESTAMP.automatorVersion(BD.VERSION);
     scheduller();
+    var time = new Date();
+    if (time.getUTCHours() == 0) {
+        BD.TIMESTAMP.automatorVersion(BD.VERSION);
+    }
 }
 function scheduller() {
     var time = new Date();
