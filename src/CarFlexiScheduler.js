@@ -2,7 +2,7 @@
  * @Version 4.7.2
  * @Author Argiris
  * @Date 04/10/2017
- * @Changelog Removed sqr, logingService, saveAccountKpi
+ * @Changelog Removed sqr
  * 
  * @Version 4.7.1
  * @Author Argiris
@@ -411,7 +411,7 @@ function scheduller() {
             bidder('trf', '7i');
         }
     } else if (time.getUTCHours() == 8) {
-        //logingService();
+        logingService();
     } else if (time.getUTCHours() == 9) {
         if ((getDayInYear() % 2) == 1) {
             complementaryBidder('tt', 'p');
@@ -1367,7 +1367,7 @@ function AccountKpiSetter() {
             AdWordsApp.createLabel("##Account#Attributes##", newDescription);
         }
         var cid = AdWordsApp.currentAccount().getCustomerId().replace(/\-/g, "");
-        //saveAccountKpi(cid, key, value);
+        saveAccountKpi(cid, key, value);
     };
 
     /**
