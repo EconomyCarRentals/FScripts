@@ -1,4 +1,9 @@
 /**
+ * @Version 4.7.2
+ * @Author Argiris
+ * @Date 04/10/2017
+ * @Changelog Removed sqr
+ * 
  * @Version 4.7.1
  * @Author Argiris
  * @Date 04/10/2017
@@ -210,7 +215,7 @@
 
 function main() {
     BD = {};
-    BD.VERSION = "4.7.1";
+    BD.VERSION = "4.7.2";
     BD.ACC = {};
     BD.CAMP = {};
     BD.ADGR = {};
@@ -384,77 +389,57 @@ function scheduller() {
     } else if (time.getUTCHours() == 2) {
         if ((getDayInYear() % 2) == 1) {
             bidder('trf', '2i');
-        } else {
-            sqr();
         }
     } else if (time.getUTCHours() == 3) {
         if ((getDayInYear() % 3) == 1) {
             bidder('trf', '3i');
-        } else {
-            sqr();
         }
     } else if (time.getUTCHours() == 4) {
         if ((getDayInYear() % 4) == 1) {
             bidder('trf', '4i');
-        } else {
-            sqr();
         }
     } else if (time.getUTCHours() == 5) {
         if ((getDayInYear() % 5) == 1) {
             bidder('trf', '5i');
-        } else {
-            sqr();
         }
     } else if (time.getUTCHours() == 6) {
         if ((getDayInYear() % 6) == 1) {
             bidder('trf', '6i');
-        } else {
-            sqr();
         }
     } else if (time.getUTCHours() == 7) {
         if ((getDayInYear() % 5) == 1) {
             bidder('trf', '7i');
-        } else {
-            sqr();
         }
     } else if (time.getUTCHours() == 8) {
         logingService();
     } else if (time.getUTCHours() == 9) {
         if ((getDayInYear() % 2) == 1) {
             complementaryBidder('tt', 'p');
-        } else {
-            sqr();
         }
     } else if (time.getUTCHours() == 10) {
         if ((getDayInYear() % 3) == 1) {
             complementaryBidder('tt', 'm4');
-        } else {
-            sqr();
         }
     } else if (time.getUTCHours() == 11) {
         if ((getDayInYear() % 4) == 1) {
             complementaryBidder('tt', 'm5');
-        } else {
-            sqr();
         }
     } else if (time.getUTCHours() == 12) {
         if ((getDayInYear() % 5) == 1) {
             complementaryBidder('tt', 'n');
-        } else {
-            sqr();
         }
     } else if (time.getUTCHours() == 13) {
-        sqr();
+
     } else if (time.getUTCHours() == 14) {
-        sqr();
+
     } else if (time.getUTCHours() == 15) {
-        sqr();
+
     } else if (time.getUTCHours() == 16) {
-        sqr();
+
     } else if (time.getUTCHours() == 17) {
-        sqr();
+
     } else if (time.getUTCHours() == 18) {
-        sqr();
+
     }
 }
 
